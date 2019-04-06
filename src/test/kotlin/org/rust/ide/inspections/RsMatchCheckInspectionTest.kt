@@ -710,4 +710,21 @@ class RsMatchCheckInspectionTest : RsInspectionsTestBase(RsMatchCheckInspection(
             }
         }
     """)
+
+    fun `test const int expr evaluation`() = checkByText("""
+        const MAX: i32 = 10;
+        const MIN: i32 = -10;
+
+        const MID: i32 = (MAX + MIN) / 2;
+
+        fn foo(v: i32) {
+            match v {
+                1 => {}
+                MIN...MAX => {}
+                <warning descr="Unreachable pattern">-3</warning> => {}
+                <warning descr="Unreachable pattern">-5..MID</warning> => {}
+                _ => {}
+            }
+        }
+    """)
 }

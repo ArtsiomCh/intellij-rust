@@ -29,23 +29,28 @@ val Matrix.type: Ty
 fun List<RsMatchArm>.calculateMatrix(): Matrix =
     flatMap { arm -> arm.patList.map { listOf(it.lower) } }
 
-private val RsExpr.value: Constant
-    get() = when (this) {
-        is RsLitExpr -> {
-            val kind = kind
-            when (kind) {
-                is RsLiteralKind.Boolean -> Constant.Boolean(kind.value)
-                is RsLiteralKind.Integer -> Constant.Integer(kind.value ?: 0)
-                is RsLiteralKind.Float -> Constant.Float(kind.value ?: 0.0)
-                is RsLiteralKind.String -> Constant.String(kind.value ?: "")
-                is RsLiteralKind.Char -> Constant.Char(kind.value ?: "")
-                null -> Constant.Unknown
-            }
+private val RsExpr.value: Constant get() {
+    return if (this is RsLitExpr) {
+        val kind = kind
+        when (kind) {
+            is RsLiteralKind.Boolean -> Constant.Boolean(kind.value)
+            is RsLiteralKind.Integer -> Constant.Integer(kind.value ?: 0)
+            is RsLiteralKind.Float -> Constant.Float(kind.value ?: 0.0)
+            is RsLiteralKind.String -> Constant.String(kind.value ?: "")
+            is RsLiteralKind.Char -> Constant.Char(kind.value ?: "")
+            null -> Constant.Unknown
         }
-        is RsPathExpr -> Constant.Path(this)
-        is RsUnaryExpr -> TODO()
-        else -> TODO()
+    } else {
+        val ty = type
+        when (ty) {
+            is TyInteger -> {
+                val value = calculate(ty) ?: return Constant.Unknown
+                Constant.Integer(value)
+            }
+            else -> TODO()
+        }
     }
+}
 
 private val RsPat.type: Ty
     get() = when (this) {

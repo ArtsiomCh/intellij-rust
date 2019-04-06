@@ -1760,7 +1760,7 @@ class RsFnInferenceContext(
                 ?: expr.initializer?.inferType()
                 ?: return TySlice(TyUnknown)
             expr.sizeExpr?.inferType(TyInteger.USize)
-            val size = calculateArraySize(expr.sizeExpr) { ctx.getResolvedPaths(it).singleOrNull() }
+            val size = expr.sizeExpr?.calculate(TyInteger.USize) { ctx.getResolvedPaths(it).singleOrNull() }
             elementType to size
         } else {
             val elementTypes = expr.arrayElements?.map { it.inferType(expectedElemTy) }
